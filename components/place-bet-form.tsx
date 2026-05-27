@@ -1,0 +1,193 @@
+"use client";
+
+import React, { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+
+export default function PlaceBetForm() {
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selected, setSelected] = useState<any | null>(null);
+  const [amount, setAmount] = useState('');
+  const [message, setMessage] = useState<string | null>(null);
+  const [placing, setPlacing] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    async function load() {
+      setLoading(true);
+      try {
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        const { data, error } = await supabase
+          .from('events')
+          .select('id, name, event_date, starting_odds, volume')
+          .gt('event_date', today)
+          .order('event_date', { ascending: true })
+          .limit(50);
+
+        if (error) {
+          console.error('Error fetching events:', error);
+          setEvents([]);
+        } else {
+          setEvents(data ?? []);
+        }
+      } catch (e) {
+        console.error('Exception fetching events:', e);
+        setEvents([]);
+      } finally {
+        setLoading(false);
+      }
+      console.log('events', events);
+    }
+
+    load();
+  }, []);
+
+  async function placeBet() {
+    setMessage(null);
+    if (!selected) return setMessage('Select an event');
+    const amt = Number(amount);
+    if (!amt || amt <= 0) return setMessage('Enter a valid amount');
+
+    setPlacing(true);
+    const supabase = createClient();
+
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+      if (!userId) throw new Error('Not authenticated');
+
+      const { data: walletData } = await supabase.from('wallet').select('balance').eq('user_id', userId).single();
+      const balance = Number(walletData?.balance ?? 0);
+      if (amt > balance) throw new Error('Insufficient balance');
+
+      const payload: any = [{ event: selected.id, odds: selected.starting_odds ?? 0.5, amount: amt, user_id: userId }];
+      if (typeof selected._choice !== 'undefined') {
+        // store user's side as `choice` boolean (true = for, false = against)
+        payload[0].pick = selected._choice;
+      }
+
+      const { data: insertData, error: insertError } = await supabase.from('bets').insert(payload);
+      if (insertError) throw insertError;
+
+      await supabase.from('wallet').update({ balance: balance - amt }).eq('user_id', userId);
+
+      setMessage('Bet placed successfully');
+      setAmount('');
+      setSelected(null);
+    } catch (err: any) {
+      setMessage(err?.message ?? 'Error placing bet');
+    } finally {
+      setPlacing(false);
+    }
+  }
+
+  if (loading) {
+    return <div className="text-sm text-muted-foreground">Loading events…</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Events grid */}
+      <div>
+        <h3 className="text-sm font-medium mb-3">Available Events</h3>
+        {events.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No events available.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {events.map((ev) => (
+              <div
+                key={ev.id}
+                onClick={() => setSelected(ev)}
+                className={`p-4 rounded-lg border cursor-pointer transition ${
+                  selected?.id === ev.id
+                    ? 'border-primary bg-primary/10'
+                    : 'border-muted-foreground/20 hover:border-primary/50'
+                }`}
+              >
+                <div className="font-semibold">{ev.name ?? `Event ${ev.id}`}</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Odds: <span className="font-medium text-foreground">{ev.starting_odds}</span>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">Volume: <span className="font-medium">{ev.volume ? ev.volume - 1000 : 0}</span></div>
+                {ev.event_date && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {ev.event_date}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Bet form */}
+      {selected && (
+        <div className="rounded-lg border p-4 space-y-3 bg-muted/50">
+          <div>
+            <p className="text-sm font-medium">Betting on: {selected.name ?? `Event ${selected.id}`}</p>
+            <p className="text-xs text-muted-foreground">Odds: {selected.starting_odds}</p>
+            <p className="text-xs text-muted-foreground">Volume: {selected.volume ? selected.volume - 1000 : 0}</p>
+          </div>
+
+          <div className="flex gap-2 items-center">
+            <label className="text-sm font-medium">Side</label>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSelected({ ...selected, _choice: true })}
+                className={`px-3 py-1 rounded ${selected?._choice === true ? 'text-emerald-600 bg-primary text-white' : 'border'}`}
+                disabled={placing}
+                type="button"
+              >
+                For
+              </button>
+              <button
+                onClick={() => setSelected({ ...selected, _choice: false })}
+                className={`px-3 py-1 rounded ${selected?._choice === false ? 'text-red-600 bg-primary text-white' : 'border'}`}
+                disabled={placing}
+                type="button"
+              >
+                Against
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Amount</label>
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full border rounded p-2 mt-1"
+              placeholder="Enter amount"
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={placeBet}
+              className="flex-1 bg-primary text-white px-4 py-2 rounded"
+              disabled={placing}
+            >
+              {placing ? 'Placing…' : 'Place Bet'}
+            </button>
+            <button
+              onClick={() => setSelected(null)}
+              className="px-4 py-2 rounded border"
+              disabled={placing}
+            >
+              Cancel
+            </button>
+          </div>
+
+          {message && (
+            <div className={`text-sm p-2 rounded ${message.includes('success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              {message}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
