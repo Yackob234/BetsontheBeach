@@ -34,9 +34,23 @@ export default async function LeaderboardPage() {
     profileMap[p.user_id] = p;
   });
 
+  // Get bets for these users
+  const betsResp = await supabase
+    .from('bets')
+    .select('user_id, amount, outcome')
+    .in('user_id', userIds).is('outcome', null); // Only consider pending bets
+  console.log("betsResp", betsResp.data);
+
+  const betsMap: Record<string, any> = {};
+  (betsResp.data ?? []).forEach((b: any) => {
+    betsMap[b.user_id] = (betsMap[b.user_id] || 0) + b.amount;
+  });
+  console.log("betsMap", betsMap);
+
   const rows = wallets.map((w: any) => ({
     ...w,
     profile: profileMap[w.user_id],
+    pendingBet: (betsMap[w.user_id] || 0),
   }));
 
   return (
@@ -109,7 +123,7 @@ export default async function LeaderboardPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-lg">{formatAmount(r.balance)}</div>
+                    <div className="font-bold text-lg">{formatAmount(r.balance + r.pendingBet)}</div>
                     <div className="text-xs text-muted-foreground">total</div>
                   </div>
                 </li>
