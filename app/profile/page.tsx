@@ -6,13 +6,13 @@ import { UsernameForm } from "./username-form";
 
 async function getCurrentProfile() {
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.getClaims();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (error || !data?.claims?.sub) {
+  if (!user?.id) {
     redirect("/auth/login");
   }
 
-  const userId = data.claims.sub;
+  const userId = user.id;
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")

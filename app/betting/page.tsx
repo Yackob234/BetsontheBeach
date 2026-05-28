@@ -4,8 +4,8 @@ import PlaceBetForm from '@/components/place-bet-form';
 
 export default async function BettingPage() {
   const supabase = await createServerClient();
-  const { data, error } = await supabase.auth.getClaims();
-  if (error || !data?.claims?.sub) redirect('/auth/login');
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.id) redirect('/auth/login');
 
   return (
     <div className="flex-1 w-full flex flex-col gap-6">

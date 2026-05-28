@@ -50,13 +50,13 @@ function formatAmount(value: number | string) {
 
 async function getDashboardData() {
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.getClaims();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (error || !data?.claims?.sub) {
+  if (!user?.id) {
     redirect("/auth/login");
   }
 
-  const userId = data.claims.sub;
+  const userId = user.id;
 
   const [walletResponse, betsResponse, eventsResponse] = await Promise.all([
     supabase.from("wallet").select("balance").eq("user_id", userId).single(),
@@ -120,10 +120,14 @@ export default async function Home() {
 
   return (
     <div className="flex-1 w-full flex flex-col gap-12">
-      <div className="w-full">
+      <div className="flex-1 w-full flex flex-col gap-2">
         <div className="bg-accent text-sm p-3 px-5 rounded-md text-foreground flex gap-3 items-center">
           <InfoIcon size="16" strokeWidth={2} />
           Gambling is a issue. This project is for educational purposes only and not intended for real money betting. Don&apos;t be a degenerate, kids.
+        </div>
+        <div className="bg-accent text-sm p-3 px-5 rounded-md text-foreground flex gap-3 items-center">
+          <InfoIcon size="16" strokeWidth={2} />
+          Also if it keeps signing you out, refresh the page. Sorry
         </div>
       </div>
 
