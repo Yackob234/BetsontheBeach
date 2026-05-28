@@ -90,7 +90,7 @@ export default function PlaceBetForm() {
     <div className="space-y-6">
       {/* Events grid */}
       <div>
-        <h3 className="text-sm font-medium mb-3">Available Events</h3>
+        {/* <h3 className="text-sm font-medium mb-3">Available Events</h3> */}
         {events.length === 0 ? (
           <p className="text-sm text-muted-foreground">No events available.</p>
         ) : (
@@ -107,7 +107,7 @@ export default function PlaceBetForm() {
               >
                 <div className="font-semibold">{ev.name ?? `Event ${ev.id}`}</div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  Odds: <span className="font-medium text-foreground">{ev.starting_odds}</span>
+                  Odds: <span className="font-medium text-foreground">{(ev.starting_odds * 100).toFixed(0)}%</span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">Volume: <span className="font-medium">{ev.volume ? ev.volume - 1000 : 0}</span></div>
                 {ev.event_date && (
@@ -126,7 +126,7 @@ export default function PlaceBetForm() {
         <div className="rounded-lg border p-4 space-y-3 bg-muted/50">
           <div>
             <p className="text-sm font-medium">Betting on: {selected.name ?? `Event ${selected.id}`}</p>
-            <p className="text-xs text-muted-foreground">Odds: {selected.starting_odds}</p>
+            <p className="text-xs text-muted-foreground">Odds: {(selected.starting_odds * 100).toFixed(0)}%</p>
             <p className="text-xs text-muted-foreground">Volume: {selected.volume ? selected.volume - 1000 : 0}</p>
           </div>
 
