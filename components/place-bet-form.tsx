@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { CommentsList } from './comments-list';
 
 export default function PlaceBetForm() {
   const [events, setEvents] = useState<any[]>([]);
@@ -185,6 +186,9 @@ export default function PlaceBetForm() {
               {message}
             </div>
           )}
+
+          {/* Comments section */}
+          <CommentsList eventId={selected.id} />
         </div>
       )}
     </div>

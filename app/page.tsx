@@ -50,19 +50,19 @@ function formatAmount(value: number | string) {
 
 async function getDashboardData() {
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.getSession();
+  const { data, error } = await supabase.auth.getClaims();
 
-  if (error || !data?.session) {
+  if (error || !data?.claims?.sub) {
     redirect("/auth/login");
   }
 
-  const userId = data.session.user.id;
+  const userId = data.claims.sub;
 
   const [walletResponse, betsResponse, eventsResponse] = await Promise.all([
     supabase.from("wallet").select("balance").eq("user_id", userId).single(),
     supabase
       .from("bets")
-      .select("id, created_at, event, odds, outcome, amount")
+      .select("id, created_at, event, odds, outcome, amount, pick")
       .eq("user_id", userId)
       .order("created_at", { ascending: false }),
     supabase.from("events").select("id, name"),
@@ -100,7 +100,7 @@ export default async function Home() {
   // Calculate potential wallet (current balance + pending bets winnings)
   const pendingWinnings = pendingBets.reduce((sum, bet) => {
     const betAmount = typeof bet.amount === "string" ? Number(bet.amount) : bet.amount;
-    const potentialWin = betAmount * (typeof bet.odds === "string" ? Number(bet.odds) : bet.odds);
+    const potentialWin = betAmount / (bet.pick ? (typeof bet.odds === "string" ? Number(bet.odds) : bet.odds) : 1 - (typeof bet.odds === "string" ? Number(bet.odds) : bet.odds));
     return sum + potentialWin;
   }, 0);
 

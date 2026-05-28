@@ -9,9 +9,9 @@ function formatAmount(value: number | string) {
 
 export default async function LeaderboardPage() {
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.getSession();
+  const { data, error } = await supabase.auth.getClaims();
 
-  if (error || !data?.session) redirect('/auth/login');
+  if (error || !data?.claims?.sub) redirect('/auth/login');
 
   // Get wallets sorted by balance
   const walletResp = await supabase
