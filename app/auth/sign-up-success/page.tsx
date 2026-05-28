@@ -12,7 +12,7 @@ export default function Page() {
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-6">
           <Card>
-            <CardHeader>
+            {/* <CardHeader>
               <CardTitle className="text-2xl">
                 Thank you for signing up!
               </CardTitle>
@@ -22,6 +22,17 @@ export default function Page() {
               <p className="text-sm text-muted-foreground">
                 You&apos;ve successfully signed up. Please check your email to
                 confirm your account before signing in.
+              </p>
+            </CardContent> */}
+            <CardHeader>
+              <CardTitle className="text-2xl">
+                Thank you for signing up!
+              </CardTitle>
+              <CardDescription>Refresh and click on a the page in the header to login</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Email confirmation is turned off for now, but if you used a fake email you won't be able to change your password, its salted.
               </p>
             </CardContent>
           </Card>
