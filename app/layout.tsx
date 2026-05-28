@@ -9,6 +9,7 @@ import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Home, Dices, Trophy, User } from "lucide-react";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -16,8 +17,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "Betting on the Beach",
+  description: "The fastest way to lose money",
 };
 
 const geistSans = Geist({
@@ -44,21 +45,27 @@ export default function RootLayout({
             <div className="flex-1 w-full flex flex-col gap-10 items-center">
               <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
                 <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-                  <div className="flex gap-5 items-center font-semibold">
-                    <nav className="flex items-center gap-3">
-                      <Link href="/" className="text-sm hover:underline">
-                        My Bets
+                  <div className="flex gap-3 md:gap-5 items-center font-semibold">
+                    <nav className="flex items-center gap-2 md:gap-3">
+                      <Link href="/" className="flex items-center gap-2 hover:opacity-70 transition-opacity p-2 md:p-0">
+                        <Home size={20} className="md:hidden flex-shrink-0" />
+                        <span className="hidden md:inline text-sm">My Bets</span>
                       </Link>
-                      <Link href="/betting" className="text-sm hover:underline">
-                        Betting
+                      <Link href="/betting" className="flex items-center gap-2 hover:opacity-70 transition-opacity p-2 md:p-0">
+                        <Dices size={20} className="md:hidden flex-shrink-0" />
+                        <span className="hidden md:inline text-sm">Betting</span>
                       </Link>
-                      <Link href="/leaderboard" className="text-sm hover:underline">
-                        Leaderboard
+                      <Link href="/leaderboard" className="flex items-center gap-2 hover:opacity-70 transition-opacity p-2 md:p-0">
+                        <Trophy size={20} className="md:hidden flex-shrink-0" />
+                        <span className="hidden md:inline text-sm">Leaderboard</span>
                       </Link>
-                      <Link href="/profile" className="text-sm hover:underline">
-                        Profile
+                      <Link href="/profile" className="flex items-center gap-2 hover:opacity-70 transition-opacity p-2 md:p-0">
+                        <User size={20} className="md:hidden flex-shrink-0" />
+                        <span className="hidden md:inline text-sm">Profile</span>
                       </Link>
-                      <ThemeSwitcher />
+                      <div className="ml-2 md:ml-0">
+                        <ThemeSwitcher />
+                      </div>
                     </nav>
                   </div>
                   {!hasEnvVars ? (

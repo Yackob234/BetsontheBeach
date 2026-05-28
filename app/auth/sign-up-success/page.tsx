@@ -28,7 +28,7 @@ export default function Page() {
               <CardTitle className="text-2xl">
                 Thank you for signing up!
               </CardTitle>
-              <CardDescription>Refresh and click on a the page in the header to login</CardDescription>
+              <CardDescription>Refresh and click on a page in the header to login</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
