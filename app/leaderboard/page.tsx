@@ -41,33 +41,77 @@ export default async function LeaderboardPage() {
 
   return (
     <div className="flex-1 w-full flex flex-col gap-6">
-      <h1 className="text-2xl font-bold">Leaderboard</h1>
-      <p className="text-sm text-muted-foreground">Top balances among degenerates.</p>
+      <div>
+        <h1 className="text-4xl font-bold mb-2">Leaderboard</h1>
+        <p className="text-sm text-foreground">Compete for glory and prizes.</p>
+      </div>
 
-      <div className="mt-4 space-y-2">
+      <div className="grid gap-3 md:grid-cols-2 mb-6">
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-2xl">🥇</span>
+            <p className="font-semibold text-sm">1st Place Prize</p>
+          </div>
+          <p className="text-sm text-foreground">Exclusive 1 on 1 dinner</p>
+        </div>
+        <div className="rounded-lg border border-slate-300 bg-slate-50 dark:bg-slate-900 dark:border-slate-700 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-2xl">🥈</span>
+            <p className="font-semibold text-sm">2nd Place Prize</p>
+          </div>
+          <p className="text-sm text-foreground">A heartfelt hug</p>
+        </div>
+        <p className="text-sm text-muted-foreground">Open to pity 3rd place suggestions</p>
+      </div>
+      
+
+      <div className="mt-2 space-y-3">
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">No wallet data yet.</p>
         ) : (
-          <ol className="space-y-3">
+          <ol className="space-y-2">
             {rows.map((r: any, idx: number) => {
               const profile = r.profile;
-              console.log('profile', profile);
+              let medalEmoji = '';
+              let medalBgColor = '';
+              
+              if (idx === 0) {
+                medalEmoji = '🥇';
+                medalBgColor = 'bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800';
+              } else if (idx === 1) {
+                medalEmoji = '🥈';
+                medalBgColor = 'bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700';
+              } else if (idx === 2) {
+                medalEmoji = '🥉';
+                medalBgColor = 'bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800';
+              }
+              
               return (
-                <li key={r.user_id} className="flex items-center justify-between rounded border p-3">
-                  <div className="flex items-center gap-3">
+                <li key={r.user_id} className={`flex items-center justify-between rounded-lg border p-4 transition-all hover:shadow-md ${medalBgColor || 'border-foreground/10 bg-background'}`}>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-center w-10 h-10">
+                      {medalEmoji ? (
+                        <span className="text-xl">{medalEmoji}</span>
+                      ) : (
+                        <div className="font-bold text-lg text-muted-foreground">#{idx + 1}</div>
+                      )}
+                    </div>
                     {profile?.avatar_url && (
                       <img
                         src={profile.avatar_url}
                         alt={profile.username}
-                        className="w-10 h-10 rounded-full object-cover"
+                        className="w-12 h-12 rounded-full object-cover ring-2 ring-foreground/10"
                       />
                     )}
                     <div>
-                      <div className="font-semibold">#{idx + 1}</div>
-                      <div className="text-sm text-muted-foreground">{profile?.username || 'Unknown'}</div>
+                      <div className="font-semibold text-base">{profile?.username || 'Unknown'}</div>
+                      <div className="text-xs text-muted-foreground">Rank #{idx + 1}</div>
                     </div>
                   </div>
-                  <div className="font-medium">{formatAmount(r.balance)}</div>
+                  <div className="text-right">
+                    <div className="font-bold text-lg">{formatAmount(r.balance)}</div>
+                    <div className="text-xs text-muted-foreground">total</div>
+                  </div>
                 </li>
               );
             })}
