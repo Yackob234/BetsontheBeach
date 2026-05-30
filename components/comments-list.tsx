@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "./ui/button";
 
 interface Comment {
   id: number;
@@ -131,13 +132,13 @@ export function CommentsList({ eventId, onCommentAdded }: CommentsListProps) {
           className="w-full border rounded p-2 text-sm resize-none"
           rows={2}
         />
-        <button
+        <Button
           onClick={postComment}
           disabled={posting || !newComment.trim() || loading}
-          className="w-full bg-primary text-white text-sm px-3 py-1 rounded disabled:opacity-50"
+          className="flex-1 w-full"
         >
           {posting ? "Posting..." : "Post Comment"}
-        </button>
+        </Button>
       </div>
 
       {error && <p className="text-xs text-red-500">{error}</p>}

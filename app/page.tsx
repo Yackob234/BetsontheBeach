@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
-import { InfoIcon } from "lucide-react";
+import { InfoIcon, Newspaper } from "lucide-react";
+import { NewsCard, NewsRecord } from "@/components/news-card";
 
 type BetRecord = {
   id: number;
@@ -58,7 +59,7 @@ async function getDashboardData() {
 
   const userId = user.id;
 
-  const [walletResponse, betsResponse, eventsResponse] = await Promise.all([
+  const [walletResponse, betsResponse, eventsResponse, newsResponse] = await Promise.all([
     supabase.from("wallet").select("balance").eq("user_id", userId).single(),
     supabase
       .from("bets")
@@ -66,7 +67,32 @@ async function getDashboardData() {
       .eq("user_id", userId)
       .order("created_at", { ascending: false }),
     supabase.from("events").select("id, name"),
+    supabase
+      .from("news")
+      .select("id, created_at, title, content, image_url, author")
+      .order("created_at", { ascending: false })
+      .limit(5),
   ]);
+
+  // Fetch author usernames for news items
+  let newsWithUsernames: NewsRecord[] = [];
+  if (newsResponse.data && newsResponse.data.length > 0) {
+    const authorIds = newsResponse.data.map((n: any) => n.author);
+    const profilesResponse = await supabase
+      .from("profiles")
+      .select("user_id, username")
+      .in("user_id", authorIds);
+
+    const profileMap: { [key: string]: string } = {};
+    (profilesResponse.data || []).forEach((p: any) => {
+      profileMap[p.user_id] = p.username;
+    });
+
+    newsWithUsernames = newsResponse.data.map((n: any) => ({
+      ...n,
+      author_username: profileMap[n.author] || "Unknown",
+    }));
+  }
 
   const walletError =
     walletResponse.error && walletResponse.status !== 406
@@ -88,11 +114,12 @@ async function getDashboardData() {
     bets: betsResponse.data ?? [],
     betsError: betsResponse.error,
     eventMap,
+    news: newsWithUsernames,
   };
 }
 
 export default async function Home() {
-  const { wallet, bets, walletError, betsError, eventMap } = await getDashboardData();
+  const { wallet, bets, walletError, betsError, eventMap, news } = await getDashboardData();
 
   const pendingBets = bets.filter((bet) => bet.outcome === null);
   const resolvedBets = bets.filter((bet) => bet.outcome !== null);
@@ -132,29 +159,49 @@ export default async function Home() {
       </div>
 
       <section className="grid gap-6 lg:grid-cols-[1fr_1.5fr]">
-        <div className="rounded-lg border bg-background p-6 shadow-sm">
-          <h2 className="font-bold text-2xl mb-3">Wallet</h2>
-          {walletError ? (
-            <p className="text-sm text-red-500">Unable to load wallet.</p>
-          ) : wallet ? (
-            <div>
-              <p className="text-xs uppercase text-muted-foreground mb-2">Current balance</p>
-              <div className="text-4xl font-semibold mb-4">{formatAmount(currentBalance)}</div>
-              <p className="text-xs uppercase text-muted-foreground mb-1">Potential balance</p>
-              <p className="text-2xl font-semibold text-amber-600">{formatAmount(potentialBalance)}</p>
-              {pendingBets.length > 0 && (
-                <p className="text-xs text-muted-foreground mt-3">
-                  +{formatAmount(pendingWinnings)} from {pendingBets.length} pending {pendingBets.length === 1 ? "bet" : "bets"}
-                </p>
+        <div className="rounded-lg bg-background flex flex-col gap-6">
+          <div className="rounded-lg border bg-background p-6 shadow-sm">
+            <h2 className="font-bold text-2xl mb-3">Wallet</h2>
+            {walletError ? (
+              <p className="text-sm text-red-500">Unable to load wallet.</p>
+            ) : wallet ? (
+              <div>
+                <p className="text-xs uppercase text-muted-foreground mb-2">Current balance</p>
+                <div className="text-4xl font-semibold mb-4">{formatAmount(currentBalance)}</div>
+                <p className="text-xs uppercase text-muted-foreground mb-1">Potential balance</p>
+                <p className="text-2xl font-semibold text-amber-600">{formatAmount(potentialBalance)}</p>
+                {pendingBets.length > 0 && (
+                  <p className="text-xs text-muted-foreground mt-3">
+                    +{formatAmount(pendingWinnings)} from {pendingBets.length} pending {pendingBets.length === 1 ? "bet" : "bets"}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No wallet found yet. Create a wallet row for your user in Supabase.
+              </p>
+            )}
+          </div>
+        
+          <section className="w-full">
+            <div className="rounded-lg border bg-background p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <Newspaper size={24} />
+                <h2 className="font-bold text-2xl">Latest News</h2>
+              </div>
+
+              {news && news.length > 0 ? (
+                <div className="grid gap-4 md:grid-cols-1">
+                  {news.map((item: NewsRecord) => (
+                    <NewsCard key={item.id} item={item} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No news yet.</p>
               )}
             </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No wallet found yet. Create a wallet row for your user in Supabase.
-            </p>
-          )}
+          </section>
         </div>
-
         <div className="rounded-lg border bg-background p-6 shadow-sm">
           <h2 className="font-bold text-2xl mb-3">Bet history</h2>
           {betsError ? (
@@ -236,6 +283,7 @@ export default async function Home() {
           )}
         </div>
       </section>
+
 
     </div>
   );

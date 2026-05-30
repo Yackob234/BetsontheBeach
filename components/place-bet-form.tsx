@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { CommentsList } from './comments-list';
+import { Button } from '@/components/ui/button';
 
 export default function PlaceBetForm() {
   const [events, setEvents] = useState<any[]>([]);
@@ -134,22 +135,24 @@ export default function PlaceBetForm() {
           <div className="flex gap-2 items-center">
             <label className="text-sm font-medium">Side</label>
             <div className="flex items-center gap-2">
-              <button
+              <Button
                 onClick={() => setSelected({ ...selected, _choice: true })}
-                className={`px-3 py-1 rounded ${selected?._choice === true ? 'text-emerald-600 bg-primary text-white' : 'border'}`}
+                variant={selected?._choice === true ? 'default' : 'outline'}
                 disabled={placing}
                 type="button"
+                size="sm"
               >
-                For
-              </button>
-              <button
+                Over
+              </Button>
+              <Button
                 onClick={() => setSelected({ ...selected, _choice: false })}
-                className={`px-3 py-1 rounded ${selected?._choice === false ? 'text-red-600 bg-primary text-white' : 'border'}`}
+                variant={selected?._choice === false ? 'default' : 'outline'}
                 disabled={placing}
                 type="button"
+                size="sm"
               >
-                Against
-              </button>
+                Under
+              </Button>
             </div>
           </div>
 
@@ -165,20 +168,20 @@ export default function PlaceBetForm() {
           </div>
 
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={placeBet}
-              className="flex-1 bg-primary text-white px-4 py-2 rounded"
+              className="flex-1"
               disabled={placing}
             >
               {placing ? 'Placing…' : 'Place Bet'}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => setSelected(null)}
-              className="px-4 py-2 rounded border"
+              variant="outline"
               disabled={placing}
             >
               Cancel
-            </button>
+            </Button>
           </div>
 
           {message && (
