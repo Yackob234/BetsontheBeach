@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { InfoIcon } from "lucide-react";
 import { UsernameForm } from "./username-form";
+import { NewsUploadForm } from "./news-upload-form";
 
 async function getCurrentProfile() {
   const supabase = await createClient();
@@ -46,6 +47,10 @@ export default async function ProfilePage() {
             Your username is your display name and will be shown on the leaderboard and to other users.
           </p>
         </div>
+      </div>
+
+      <div className="w-full">
+        <NewsUploadForm />
       </div>
     </div>
   );
