@@ -2,7 +2,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
-const BOT_USER_ID = 'your-bot-uuid-here'
+const BOT_USER_ID = '27872316-99c8-4ff2-b718-56dc23870ada'
 const SPY_JUNE1_CLOSE = 756.48
 const BASELINE_BALANCE = 1000
 
