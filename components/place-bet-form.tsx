@@ -19,11 +19,23 @@ export default function PlaceBetForm() {
     async function load() {
       setLoading(true);
       try {
-        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        // Get current time in EST
+        const nowEST = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })
+        const estDate = new Date(nowEST)
+
+        // Set cutoff to 6pm EST today
+        const cutoff = new Date(nowEST)
+        cutoff.setHours(18, 0, 0, 0)
+
+        // If before 6pm EST, include today's events, otherwise only future dates
+        const cutoffISO = estDate < cutoff
+          ? estDate.toISOString().slice(0, 10)   // include today
+          : new Date(cutoff.setDate(cutoff.getDate() + 1)).toISOString().slice(0, 10) // exclude today
+
         const { data, error } = await supabase
           .from('events')
           .select('id, name, event_date, starting_odds, volume')
-          .gt('event_date', today)
+          .gte('event_date', cutoffISO)
           .order('event_date', { ascending: true })
           .limit(50);
 
