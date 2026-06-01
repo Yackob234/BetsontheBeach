@@ -11,6 +11,7 @@ export function LogoutButton() {
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/auth/login");
+    window.location.href = '/';
   };
 
   return <Button onClick={logout} size="sm" variant="outline">Logout</Button>;

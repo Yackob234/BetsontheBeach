@@ -42,6 +42,7 @@ export function LoginForm({
       router.refresh();
       // Then navigate to home
       router.push("/");
+      window.location.href = '/';
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
