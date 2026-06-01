@@ -11,6 +11,7 @@ type BetRecord = {
   odds: number;
   outcome: boolean | null;
   amount: number | string;
+  pick?: boolean;
 };
 
 type WalletRecord = {
@@ -152,10 +153,6 @@ export default async function Home() {
           <InfoIcon size="16" strokeWidth={2} />
           Gambling is a issue. This project is for educational purposes only and not intended for real money betting. Don&apos;t be a degenerate, kids.
         </div>
-        <div className="bg-accent text-sm p-3 px-5 rounded-md text-foreground flex gap-3 items-center">
-          <InfoIcon size="16" strokeWidth={2} />
-          Also if it keeps signing you out, refresh the page. Sorry
-        </div>
       </div>
 
       <section className="grid gap-6 lg:grid-cols-[1fr_1.5fr]">
@@ -221,6 +218,7 @@ export default async function Home() {
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
                             <p className="font-semibold">{eventMap[bet.event] || `Event ${bet.event}`}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{bet.pick ? "🟢 For" : "🔴 Against"}</p>
                           </div>
                           <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusBadgeClasses(bet.outcome)}`}>
                             {formatBetStatus(bet.outcome)}
@@ -255,8 +253,9 @@ export default async function Home() {
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
                             <p className="font-semibold">{eventMap[bet.event] || `Event ${bet.event}`}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{bet.pick ? "🟢 For" : "🔴 Against"}</p>
                           </div>
-                          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                          <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-300">
                             Pending
                           </span>
                         </div>
