@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { updateUsername } from "./actions";
+import { InfoIcon } from "lucide-react";
 
 export function UsernameForm({ currentUsername }: { currentUsername: string }) {
   const [username, setUsername] = useState(currentUsername);
@@ -69,8 +70,19 @@ export function UsernameForm({ currentUsername }: { currentUsername: string }) {
           >
             {isLoading ? "Updating..." : "Update Username"}
           </Button>
+            <div className="w-full">
+                <div className="bg-blue-50 dark:bg-blue-950 text-sm p-3 px-5 rounded-md text-blue-900 dark:text-blue-100 flex gap-3 items-start">
+                    <InfoIcon size="16" strokeWidth={2} className="flex-shrink-0 mt-0.5" />
+                    <p>
+                    Your username is your display name and will be shown on the leaderboard and to other users.
+                    </p>
+                </div>
+            </div>
+
         </div>
+        
       </CardContent>
+      
     </Card>
   );
 }

@@ -36,18 +36,10 @@ export default async function ProfilePage() {
     <div className="flex-1 w-full flex flex-col gap-6">
       <h1 className="text-2xl font-bold">Profile Settings</h1>
 
-      <div className="max-w-md">
+      <div className="w-full flex flex-col gap-6">
         <UsernameForm currentUsername={profile?.username || ""} />
       </div>
 
-      <div className="w-full">
-        <div className="bg-blue-50 dark:bg-blue-950 text-sm p-3 px-5 rounded-md text-blue-900 dark:text-blue-100 flex gap-3 items-start">
-          <InfoIcon size="16" strokeWidth={2} className="flex-shrink-0 mt-0.5" />
-          <p>
-            Your username is your display name and will be shown on the leaderboard and to other users.
-          </p>
-        </div>
-      </div>
 
       <div className="w-full">
         <NewsUploadForm />

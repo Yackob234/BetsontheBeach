@@ -209,9 +209,9 @@ export function NewsUploadForm() {
         </Button>
       </form>
 
-      <div className="mt-4 p-3 rounded-md bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 flex gap-2">
-        <InfoIcon size={16} className="flex-shrink-0 mt-0.5 text-blue-900 dark:text-blue-100" />
-        <p className="text-xs text-blue-900 dark:text-blue-100">
+      <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 text-sm p-3 px-5 rounded-md text-blue-900 dark:text-blue-100 flex gap-3 items-start">
+        <InfoIcon size="16" strokeWidth={2} className="flex-shrink-0 mt-0.5" />
+        <p>
           Articles you publish will be visible on the home page news section.
         </p>
       </div>
