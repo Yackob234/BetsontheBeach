@@ -9,10 +9,24 @@ export async function AuthButton() {
   // getUser() is the reliable way to check auth on the server
   const { data: { user } } = await supabase.auth.getUser();
 
+  let username = user?.email;
+
+  if (user?.id) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("user_id", user.id)
+      .single();
+
+    if (profile?.username) {
+      username = profile.username;
+    }
+  }
+
   return user ? (
     <div className="flex items-center gap-2 md:gap-4">
-      <span className="hidden md:inline text-sm truncate max-w-[150px]">
-        Hey, {user.email}!
+      <span className="hidden md:inline text-sm truncate">
+        Hey, {username}!
       </span>
       <LogoutButton />
     </div>

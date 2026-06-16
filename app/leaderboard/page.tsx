@@ -51,7 +51,14 @@ export default async function LeaderboardPage() {
     ...w,
     profile: profileMap[w.user_id],
     pendingBet: (betsMap[w.user_id] || 0),
-  }));
+  }))
+  
+  // Sort by total balance (current + pending bets) in descending order
+  .sort((a: any, b: any) => {
+    const aTotal = Number(a.balance) + Number(a.pendingBet);
+    const bTotal = Number(b.balance) + Number(b.pendingBet);
+    return bTotal - aTotal;
+  });
 
   return (
     <div className="flex-1 w-full flex flex-col gap-6">
@@ -66,7 +73,7 @@ export default async function LeaderboardPage() {
             <span className="text-2xl">🥇</span>
             <p className="font-semibold text-sm">1st Place Prize</p>
           </div>
-          <p className="text-sm text-foreground">Exclusive 1 on 1 dinner</p>
+          <p className="text-sm text-foreground">Exclusive 1 on 1 paid dinner*</p>
         </div>
         <div className="rounded-lg border border-slate-300 bg-slate-50 dark:bg-slate-900 dark:border-slate-700 p-4">
           <div className="flex items-center gap-2 mb-1">

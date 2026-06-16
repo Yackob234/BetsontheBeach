@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { InfoIcon, Newspaper } from "lucide-react";
 import { NewsCard, NewsRecord } from "@/components/news-card";
+import { FormattedTime } from "@/components/formatted-time";
 
 type BetRecord = {
   id: number;
@@ -147,10 +148,10 @@ export default async function Home() {
   }
 
   return (
-    <div className="flex-1 w-full flex flex-col gap-12">
+    <div className="flex-1 w-full flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <div className="bg-accent text-sm p-3 px-5 rounded-md text-foreground flex gap-3 items-center">
-          <InfoIcon size="16" strokeWidth={2} />
+          <InfoIcon size="16" strokeWidth={2} width={16} height={16} className="flex-shrink-0 mt-0.5" />
           Gambling is a issue. This project is for educational purposes only and not intended for real money betting. Don&apos;t be a degenerate, kids.
         </div>
       </div>
@@ -235,7 +236,7 @@ export default async function Home() {
                           </div>
                           <div>
                             <p className="text-xs uppercase text-muted-foreground">Placed</p>
-                            <p>{formatTimestamp(bet.created_at)}</p>
+                            <p><FormattedTime timestamp={bet.created_at} /></p>
                           </div>
                         </div>
                       </div>
@@ -270,7 +271,7 @@ export default async function Home() {
                           </div>
                           <div>
                             <p className="text-xs uppercase text-muted-foreground">Placed</p>
-                            <p>{formatTimestamp(bet.created_at)}</p>
+                            <p><FormattedTime timestamp={bet.created_at} /></p>
                           </div>
                         </div>
                       </div>

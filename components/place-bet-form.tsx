@@ -145,7 +145,7 @@ export default function PlaceBetForm() {
           </div>
 
           <div className="flex gap-2 items-center">
-            <label className="text-sm font-medium">Side</label>
+            <label className="text-sm font-medium">Side:</label>
             <div className="flex items-center gap-2">
               <Button
                 onClick={() => setSelected({ ...selected, _choice: true })}
