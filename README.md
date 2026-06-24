@@ -1,109 +1,163 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# 🏖️ Bets on the Beach
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+A social betting platform for friends and groups. Place bets on real-world events, compete on the leaderboard, and track your balance against the S&P 500.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+---
 
 ## Features
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Proxy
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+- **Event Betting** — Bet yes or no on real-world events with dynamic odds that shift as money comes in
+- **Dynamic Odds** — Odds are calculated as a pure ratio of money on each side, updating in real time as bets are placed
+- **Leaderboard** — See who's up and who's down across the group
+- **S&P 500 Benchmark** — A bot user tracks the S&P 500 return since June 1st 2026 so you can see if you're beating the market
+- **News** — Admins can publish news stories with images to the homepage
+- **Event Comments** — Discuss and trash talk on each event page
+- **Bet History** — View all your past bets, outcomes, and payouts
+- **Event Recap** — Post-event summaries and results
+- **Dark Mode** — Full light/dark theme support
+- **Event Tags** — Tag events by author, sport, or date - TBD
 
-## Demo
+---
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+## Tech Stack
 
-## Deploy to Vercel
+| Layer | Tool |
+|---|---|
+| Framework | Next.js (App Router) |
+| Database | Supabase (PostgreSQL) |
+| Auth | Supabase Auth |
+| Storage | Supabase Storage |
+| Hosting | Vercel |
+| Styling | Tailwind CSS + shadcn/ui |
 
-Vercel deployment will guide you through creating a Supabase account and project.
+---
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+## Getting Started
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+### Prerequisites
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+- Node.js 18+
+- A Supabase project
+- A Vercel account (for deployment)
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+### Local Development
 
-## Clone and run locally
+```bash
+# Clone the repo
+git clone https://github.com/Yackob234/BetsontheBeach.git
+cd BetsontheBeach
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+# Install dependencies
+npm install
 
-2. Create a Next.js app using the Supabase Starter template npx command
+# Add environment variables
+cp .env.example .env.local
+# Fill in your Supabase URL and anon key
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
+# Run the dev server
+npm run dev
+```
 
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
+### Environment Variables
 
-3. Use `cd` to change into the app's directory
+```
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+ALPHA_VANTAGE_KEY=your-alpha-vantage-api-key
+```
 
-   ```bash
-   cd with-supabase-app
-   ```
+---
 
-4. Rename `.env.example` to `.env.local` and update the following:
+## Database Schema
 
-  ```env
-  NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[INSERT SUPABASE PROJECT API PUBLISHABLE OR ANON KEY]
-  ```
-  > [!NOTE]
-  > This example uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, which refers to Supabase's new **publishable** key format.
-  > Both legacy **anon** keys and new **publishable** keys can be used with this variable name during the transition period. Supabase's dashboard may show `NEXT_PUBLIC_SUPABASE_ANON_KEY`; its value can be used in this example.
-  > See the [full announcement](https://github.com/orgs/supabase/discussions/29260) for more information.
+| Table | Description |
+|---|---|
+| `profiles` | Public user profiles linked to auth.users |
+| `wallet` | Each user's balance, starting at $1000 |
+| `events` | Bettable events with odds, volume, and result |
+| `bets` | Individual bets placed by users |
+| `news` | News stories published by verified humans |
+| `comments` | Comments on individual events |
 
-  Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
+### Key Database Functions
 
-5. You can now run the Next.js local development server:
+- `resolve_event(event_id, result)` — Resolves an event, pays out winners, marks losers
+- `handle_new_user()` — Trigger that auto-creates a profile and wallet on signup
+- `handle_new_bet()` — Trigger that updates event volume and recalculates odds on each bet
 
-   ```bash
-   npm run dev
-   ```
+---
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+## How Betting Works
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+1. Events are created by admins with a starting odds (e.g. `0.50` = 50/50)
+2. Users bet yes (`true`) or no (`false`) with any amount from their wallet
+3. Odds shift automatically as money comes in — more money on one side = worse odds for that side
+4. Betting closes at **6pm EST** on the day of the event
+5. Admin resolves the event with the true/false result
+6. Winners are paid out based on the odds at the time they placed their bet:
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+```
+payout = amount / odds_at_placement
+```
 
-## Feedback and issues
+---
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+## How Odds Work
 
-## More Supabase examples
+Odds are a pure ratio of money on each side:
 
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+```
+odds_true  = volume_true  / total_volume
+odds_false = volume_false / total_volume
+```
+
+Always adds up to 1.0. No house edge.
+
+**Example:**
+```
+$500 on yes, $500 on no → odds = 0.50 / 0.50
+$1000 more on yes       → odds = 0.75 / 0.25
+```
+
+---
+
+## S&P 500 Bot
+
+A bot user called **S&P 500** tracks the market return since June 1st 2026 as a benchmark. Its balance updates daily via a Cron-Job.org that hits the Alpha Vantage API at 4pm EST on weekdays.
+
+```
+bot_balance = 1000 * (current_SPY_price / SPY_price_on_june1)
+```
+
+---
+
+## Deployment
+
+The app deploys automatically to Vercel on every push to `main`.
+
+```bash
+git add .
+git commit -m "your message"
+git push
+```
+
+Make sure all environment variables are set in **Vercel → Settings → Environment Variables**.
+
+---
+
+## Admin Features
+
+Admins (`is_admin = true` on profiles) can:
+- Create and manage events
+- Resolve or cancel events
+- Publish news stories
+
+Humans (`is_human = true` on profiles) can:
+- Publish news stories
+
+These flags are set manually in the Supabase dashboard.
+
+---

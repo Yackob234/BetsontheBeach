@@ -13,6 +13,7 @@ export default function PlaceBetForm() {
   const [message, setMessage] = useState<string | null>(null);
   const [placing, setPlacing] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
 
   const loadEvents = useCallback(async () => {
     setLoading(true);
@@ -42,6 +43,27 @@ export default function PlaceBetForm() {
         console.error('Error fetching events:', error);
         setEvents([]);
         return [];
+      }
+      // Fetch comment counts for all events
+      if (data && data.length > 0) {
+        const eventIds = data.map((e: any) => e.id);
+        const { data: commentsData } = await supabase
+          .from('comments')
+          .select('event_id', { count: 'exact', head: true })
+          .in('event_id', eventIds);
+        
+        // Count comments per event
+        const counts: Record<number, number> = {};
+        const { data: allComments } = await supabase
+          .from('comments')
+          .select('event_id')
+          .in('event_id', eventIds);
+        
+        (allComments ?? []).forEach((c: any) => {
+          counts[c.event_id] = (counts[c.event_id] || 0) + 1;
+        });
+        
+        setCommentCounts(counts);
       }
 
       setEvents(data ?? []);
@@ -142,12 +164,20 @@ export default function PlaceBetForm() {
                           setMessage(null);
                           setSelected(a);
                         }}
-                        className={`w-full min-w-0 p-4 rounded-lg border cursor-pointer transition ${
+                        className={`relative w-full min-w-0 p-4 rounded-lg border cursor-pointer transition ${
                           selected?.id === a.id
                             ? 'border-primary bg-primary/10'
                             : 'border-muted-foreground/20 hover:border-primary/50'
                         }`}
                       >
+                        {/* Comment count badge */}
+                        <div className="absolute top-2 right-2 flex items-center gap-1 text-xs text-muted-foreground">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                          </svg>
+                          <span>{commentCounts[a.id] ?? 0}</span>
+                        </div>
+
                         <div className="font-semibold">{a.name ?? `Event ${a.id}`}</div>
                         <div className="text-xs text-muted-foreground mt-1">
                           Odds: <span className="font-medium text-foreground">{(a.starting_odds * 100).toFixed(0)}%</span>
@@ -163,12 +193,19 @@ export default function PlaceBetForm() {
                             setMessage(null);
                             setSelected(b);
                           }}
-                          className={`w-full min-w-0 p-4 rounded-lg border cursor-pointer transition ${
+                          className={`relative w-full min-w-0 p-4 rounded-lg border cursor-pointer transition ${
                             selected?.id === b.id
                               ? 'border-primary bg-primary/10'
                               : 'border-muted-foreground/20 hover:border-primary/50'
                           }`}
                         >
+                          {/* Comment count badge */}
+                          <div className="absolute top-2 right-2 flex items-center gap-1 text-xs text-muted-foreground">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            <span>{commentCounts[b.id] ?? 0}</span>
+                          </div>
                           <div className="font-semibold">{b.name ?? `Event ${b.id}`}</div>
                           <div className="text-xs text-muted-foreground mt-1">
                             Odds: <span className="font-medium text-foreground">{(b.starting_odds * 100).toFixed(0)}%</span>
@@ -260,12 +297,20 @@ export default function PlaceBetForm() {
                       setMessage(null);
                       setSelected(ev);
                     }}
-                    className={`w-full min-w-0 p-4 rounded-lg border cursor-pointer transition ${
+                    className={`relative w-full min-w-0 p-4 rounded-lg border cursor-pointer transition ${
                       selected?.id === ev.id
                         ? 'border-primary bg-primary/10'
                         : 'border-muted-foreground/20 hover:border-primary/50'
                     }`}
                   >
+                    {/* Comment count badge */}
+                    <div className="absolute top-2 right-2 flex items-center gap-1 text-xs text-muted-foreground">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                      </svg>
+                      <span>{commentCounts[ev.id] ?? 0}</span>
+                    </div>
+
                     <div className="font-semibold">{ev.name ?? `Event ${ev.id}`}</div>
                     <div className="text-xs text-muted-foreground mt-1">
                       Odds: <span className="font-medium text-foreground">{(ev.starting_odds * 100).toFixed(0)}%</span>
