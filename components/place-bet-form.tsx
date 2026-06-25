@@ -14,6 +14,7 @@ export default function PlaceBetForm() {
   const [placing, setPlacing] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
+  const [betComment, setBetComment] = useState("");
 
   const loadEvents = useCallback(async () => {
     setLoading(true);
@@ -32,12 +33,20 @@ export default function PlaceBetForm() {
         ? estDate.toISOString().slice(0, 10) // include today
         : new Date(cutoff.setDate(cutoff.getDate() + 1)).toISOString().slice(0, 10); // exclude today
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('events')
-        .select('id, name, event_date, starting_odds, volume')
+        .select('id, name, event_date, starting_odds, volume, tags, status')
         .gte('event_date', cutoffISO)
         .order('event_date', { ascending: true })
-        .limit(50);
+        .limit(50)
+
+      // Filter out test events in production
+      if (process.env.NODE_ENV === 'production') {
+        query = query.not('tags', 'cs', '["test"]')
+      }
+      query = query.neq('status', 'cancelled')
+
+      const { data, error } = await query
 
       if (error) {
         console.error('Error fetching events:', error);
@@ -119,10 +128,30 @@ export default function PlaceBetForm() {
         payload[0].pick = selected._choice;
       }
 
-      const { data: insertData, error: insertError } = await supabase.from('bets').insert(payload);
+      const { data: insertData, error: insertError } = await supabase
+        .from('bets')
+        .insert(payload)
+        .select()
+        .single()
       if (insertError) throw insertError;
 
       await supabase.from('wallet').update({ balance: balance - amt }).eq('user_id', userId);
+
+      // Insert mandatory comment linked to bet
+      const { error: commentError } = await supabase.from('comments').insert({
+        event_id: selected.id,
+        user_id: userId,
+        content: betComment.trim(),
+        is_bet_comment: true,
+        bet_id: insertData.id,
+        bet_pick: selected._choice,
+        bet_amount: amt,
+      })
+
+      if (commentError) throw commentError
+
+      // Reset comment after successful bet
+      setBetComment("")
 
       setMessage('Bet placed successfully');
       setAmount('');
@@ -162,6 +191,7 @@ export default function PlaceBetForm() {
                         onClick={() => {
                           setAmount('');
                           setMessage(null);
+                          setBetComment("");
                           setSelected(a);
                         }}
                         className={`relative w-full min-w-0 p-4 rounded-lg border cursor-pointer transition ${
@@ -191,6 +221,7 @@ export default function PlaceBetForm() {
                           onClick={() => {
                             setAmount('');
                             setMessage(null);
+                            setBetComment("");
                             setSelected(b);
                           }}
                           className={`relative w-full min-w-0 p-4 rounded-lg border cursor-pointer transition ${
@@ -262,8 +293,26 @@ export default function PlaceBetForm() {
                               />
                             </div>
 
+                            <div>
+                              <label className="text-sm font-medium">
+                                Comment <span className="text-red-500">*</span>
+                              </label>
+                              <textarea
+                                value={betComment}
+                                onChange={(e) => setBetComment(e.target.value)}
+                                placeholder="You must say something about your bet..."
+                                disabled={placing}
+                                className="w-full border rounded p-2 mt-1 text-sm resize-none bg-background text-foreground"
+                                rows={2}
+                              />
+                            </div>
+
                             <div className="flex gap-2">
-                              <Button onClick={placeBet} className="flex-1" disabled={placing}>
+                              <Button 
+                                onClick={placeBet} 
+                                className="flex-1" 
+                                disabled={placing || !betComment.trim() || !amount || Number(amount) <= 0 || selected._choice === undefined}
+                              >
                                 {placing ? 'Placing…' : 'Place Bet'}
                               </Button>
                               <Button onClick={() => setSelected(null)} variant="outline" disabled={placing}>
@@ -278,7 +327,12 @@ export default function PlaceBetForm() {
                             )}
 
                             {/* Comments section */}
-                            <CommentsList eventId={selected.id} />
+                            <CommentsList 
+                              eventId={selected.id}
+                              isBetMode={true}
+                              betComment={betComment}
+                              onBetCommentChange={setBetComment}
+                            />
                           </div>
                         )
                       }
@@ -295,6 +349,7 @@ export default function PlaceBetForm() {
                     onClick={() => {
                       setAmount('');
                       setMessage(null);
+                      setBetComment("");
                       setSelected(ev);
                     }}
                     className={`relative w-full min-w-0 p-4 rounded-lg border cursor-pointer transition ${
@@ -362,8 +417,26 @@ export default function PlaceBetForm() {
                         />
                       </div>
 
+                      <div>
+                        <label className="text-sm font-medium">
+                          Comment <span className="text-red-500">*</span>
+                        </label>
+                        <textarea
+                          value={betComment}
+                          onChange={(e) => setBetComment(e.target.value)}
+                          placeholder="You must say something about your bet..."
+                          disabled={placing}
+                          className="w-full border rounded p-2 mt-1 text-sm resize-none bg-background text-foreground"
+                          rows={2}
+                        />
+                      </div>
+
                       <div className="flex gap-2">
-                        <Button onClick={placeBet} className="flex-1" disabled={placing}>
+                        <Button 
+                          onClick={placeBet} 
+                          className="flex-1" 
+                          disabled={placing || !betComment.trim() || !amount || Number(amount) <= 0 || selected._choice === undefined}
+                        >
                           {placing ? 'Placing…' : 'Place Bet'}
                         </Button>
                         <Button onClick={() => setSelected(null)} variant="outline" disabled={placing}>
@@ -378,7 +451,12 @@ export default function PlaceBetForm() {
                       )}
 
                       {/* Comments section */}
-                      <CommentsList eventId={selected.id} />
+                      <CommentsList 
+                        eventId={selected.id}
+                        isBetMode={true}
+                        betComment={betComment}
+                        onBetCommentChange={setBetComment}
+                      />
                     </div>
                   )}
                 </div>
