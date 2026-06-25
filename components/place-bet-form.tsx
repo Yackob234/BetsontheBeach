@@ -42,7 +42,7 @@ export default function PlaceBetForm() {
 
       // Filter out test events in production
       if (process.env.NODE_ENV === 'production') {
-        query = query.not('tags', 'cs', '["test"]')
+        query = query.not('tags', 'cs', '{"test"}')
       }
       query = query.neq('status', 'cancelled')
 
