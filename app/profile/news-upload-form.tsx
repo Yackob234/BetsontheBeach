@@ -116,6 +116,7 @@ export function NewsUploadForm() {
             onChange={(e) => setTitle(e.target.value)}
             disabled={loading}
             className="mt-1"
+            maxLength={100}
           />
         </div>
 
@@ -128,6 +129,7 @@ export function NewsUploadForm() {
             onChange={(e) => setContent(e.target.value)}
             disabled={loading}
             className="w-full border rounded-md p-2 mt-1 min-h-32 bg-background text-foreground"
+            maxLength={5000}
           />
         </div>
 
@@ -154,6 +156,7 @@ export function NewsUploadForm() {
             className="hidden"
             onChange={handleImageChange}
             disabled={loading}
+            maxLength={5000}
           />
           {imageFile && (
             <button
@@ -183,6 +186,7 @@ export function NewsUploadForm() {
             onChange={handleUrlChange}
             disabled={loading || !!imageFile}
             className="mt-1"
+            maxLength={1000}
           />
           {imageUrl && !imageFile && (
             <img src={imageUrl} alt="url preview" className="mt-2 max-h-40 rounded-md object-cover" />
