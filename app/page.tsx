@@ -22,6 +22,7 @@ type WalletRecord = {
 type EventRecord = {
   id: number;
   name: string;
+  status: "open" | "closed" | "cancelled";
 };
 
 function formatBetStatus(outcome: boolean | null) {
@@ -68,7 +69,7 @@ async function getDashboardData() {
       .select("id, created_at, event, odds, outcome, amount, pick")
       .eq("user_id", userId)
       .order("created_at", { ascending: false }),
-    supabase.from("events").select("id, name"),
+    supabase.from("events").select("id, name, status"),
     supabase
       .from("news")
       .select("id, created_at, title, content, image_url, author")
@@ -101,11 +102,11 @@ async function getDashboardData() {
       ? walletResponse.error
       : null;
 
-  // Build a map of event ID to event name
-  const eventMap: { [key: number]: string } = {};
+  // Build a map of event ID to event
+  const eventMap: { [key: number]: EventRecord } = {};
   if (eventsResponse.data) {
     eventsResponse.data.forEach((event: EventRecord) => {
-      eventMap[event.id] = event.name;
+      eventMap[event.id] = event;
     });
   }
 
@@ -218,11 +219,13 @@ export default async function Home() {
                       <div key={bet.id} className="rounded-lg border p-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
-                            <p className="font-semibold">{eventMap[bet.event] || `Event ${bet.event}`}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{bet.pick ? "🟢 For" : "🔴 Against"}</p>
+                            <p className="font-semibold">{eventMap[bet.event]?.name || `Event ${bet.event}`}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {bet.pick ? '🟢 For' : '🔴 Against'}
+                            </p>
                           </div>
-                          <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusBadgeClasses(bet.outcome)}`}>
-                            {formatBetStatus(bet.outcome)}
+                          <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusBadgeClasses(eventMap[bet.event]?.status === 'cancelled' ? null : bet.outcome)}`}>
+                            {eventMap[bet.event]?.status === 'cancelled' ? 'Cancelled' : formatBetStatus(bet.outcome)}
                           </span>
                         </div>
                         <div className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -253,7 +256,7 @@ export default async function Home() {
                       <div key={bet.id} className="rounded-lg border p-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
-                            <p className="font-semibold">{eventMap[bet.event] || `Event ${bet.event}`}</p>
+                            <p className="font-semibold">{eventMap[bet.event].name || `Event ${bet.event}`}</p>
                             <p className="text-xs text-muted-foreground mt-1">{bet.pick ? "🟢 For" : "🔴 Against"}</p>
                           </div>
                           <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-300">
