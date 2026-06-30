@@ -226,7 +226,7 @@ async function LandingPage() {
           Free to play · No real money
         </p>
         <h1 className="text-4xl font-semibold leading-tight mb-3">
-          Predict the future.<br />Win coins.
+          Predict the future.<br />Win prizes.
         </h1>
         <p className="text-muted-foreground text-base max-w-md mx-auto mb-6 leading-relaxed">
           Place bets on real-world volleyball games using virtual coins. Track your predictions, climb the leaderboard, and see how sharp your instincts really are.
