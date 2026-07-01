@@ -333,7 +333,7 @@ async function LandingPage() {
               {news.map((item) => (
                 <div key={item.id} className="flex gap-3 py-3">
                   <div className="w-11 h-11 rounded-lg bg-muted flex-shrink-0 flex items-center justify-center text-lg">
-                    {item.image_url && (
+                    {/* {item.image_url && (
                       <div className="w-full h-11 overflow-hidden bg-muted">
                         <img
                           src={item.image_url}
@@ -341,9 +341,9 @@ async function LandingPage() {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                    ) || (
+                    ) || ( */}
                       <NewsIcon title={item.title} />
-                    )}
+                    {/* )} */}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium leading-snug">{item.title}</p>
