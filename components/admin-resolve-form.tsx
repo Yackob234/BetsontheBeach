@@ -16,11 +16,6 @@ type EventRow = {
   status: string | null;
 };
 
-const WHITELIST = (process.env.NEXT_PUBLIC_ADMIN_WHITELIST ?? "")
-  .split(",")
-  .map((value) => value.trim())
-  .filter(Boolean);
-
 export function AdminResolveForm() {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +40,10 @@ export function AdminResolveForm() {
         return;
       }
 
-      const isAllowed = WHITELIST.includes(user.id);
+      const { data: profileData } = await supabase.from("profiles").select("is_admin").eq("user_id", user?.id).single();
+
+      console.log("Profile data:", profileData);
+      const isAllowed = profileData?.is_admin;
       setAuthorized(isAllowed);
 
       if (!isAllowed) {
