@@ -9,7 +9,8 @@ import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Home, Dices, Trophy, User } from "lucide-react";
+import { Home, Dices, Trophy, User, Shield } from "lucide-react";
+import { AdminLink } from "@/components/admin-link";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -63,6 +64,9 @@ export default function RootLayout({
                         <User size={20} className="md:hidden flex-shrink-0" />
                         <span className="hidden md:inline text-sm">Profile</span>
                       </Link>
+                      <Suspense fallback={null}>
+                        <AdminLink />
+                      </Suspense>
                       <div className="ml-2 md:ml-0">
                         <ThemeSwitcher />
                       </div>
