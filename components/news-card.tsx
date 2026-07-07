@@ -9,6 +9,8 @@ export type NewsRecord = {
     image_url: string | null;
     author: string;
     author_username?: string;
+    comment_count?: number;
+    like_count?: number;
 };
 
 export function NewsCard({ item }: { item: NewsRecord }) {
@@ -43,6 +45,11 @@ export function NewsCard({ item }: { item: NewsRecord }) {
               year: "numeric",
             })}
           </p>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+          <span>{(item.comment_count ?? 0)} comment{(item.comment_count ?? 0) === 1 ? "" : "s"}</span>
+          <span>•</span>
+          <span>{(item.like_count ?? 0)} like{(item.like_count ?? 0) === 1 ? "" : "s"}</span>
         </div>
         <div className="flex items-center justify-end mt-1">
           <p className="text-xs text-muted-foreground">

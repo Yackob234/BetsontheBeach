@@ -125,6 +125,40 @@ async function getLandingData() {
   };
 }
 
+async function enrichNewsItems(supabase: Awaited<ReturnType<typeof createClient>>, newsItems: any[]) {
+  if (!newsItems.length) return [];
+
+  const newsIds = newsItems.map((item) => item.id);
+  const { data: commentRows } = await supabase
+    .from("news_comments")
+    .select("news_id, content, rating")
+    .in("news_id", newsIds)
+    .is("deleted_at", null);
+
+  const counts = Object.fromEntries(
+    newsIds.map((newsId) => [newsId, { comment_count: 0, like_count: 0 }]),
+  );
+
+  (commentRows ?? []).forEach((row: any) => {
+    const entry = counts[row.news_id];
+    if (!entry) return;
+
+    if (typeof row.content === "string" && row.content.trim() && (row.rating ?? 0) <= 0) {
+      entry.comment_count += 1;
+    }
+
+    if ((row.rating ?? 0) > 0) {
+      entry.like_count += 1;
+    }
+  });
+
+  return newsItems.map((item) => ({
+    ...item,
+    comment_count: counts[item.id]?.comment_count ?? 0,
+    like_count: counts[item.id]?.like_count ?? 0,
+  }));
+}
+
 async function getDashboardData() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -161,10 +195,12 @@ async function getDashboardData() {
       profileMap[p.user_id] = p.username;
     });
 
-    newsWithUsernames = newsResponse.data.map((n: any) => ({
+    const newsRows = (newsResponse.data ?? []).map((n: any) => ({
       ...n,
       author_username: profileMap[n.author] || "Unknown",
     }));
+
+    newsWithUsernames = await enrichNewsItems(supabase, newsRows);
   }
 
   const walletError =
