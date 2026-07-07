@@ -480,10 +480,10 @@ async function Dashboard() {
 
           <section className="w-full">
             <div className="rounded-lg border bg-background p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
+              <Link href="/news"  className="flex items-center gap-2 mb-4 hover:opacity-70 transition-opacity ">
                 <Newspaper size={24} />
                 <h2 className="font-bold text-2xl">Latest News</h2>
-              </div>
+              </Link>
               {news && news.length > 0 ? (
                 <div className="grid gap-4 md:grid-cols-1">
                   {news.map((item: NewsRecord) => (

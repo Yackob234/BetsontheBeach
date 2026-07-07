@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link';
 import { useState } from 'react'
 
 export type NewsRecord = {
@@ -30,7 +31,13 @@ export function NewsCard({ item }: { item: NewsRecord }) {
         </div>
       )}
       <div className="p-4 flex flex-col flex-grow">
-        <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
+        <Link
+          href={`/news/${item.id}`}
+          onClick={(e) => e.stopPropagation()}
+          className="mb-4 hover:opacity-70 transition-opacity"
+        >
+          <h3 className="font-semibold text-lg">{item.title}</h3>
+        </Link>
         <p className={`text-sm text-muted-foreground mb-3 flex-grow ${expanded ? '' : 'line-clamp-3'}`}>
           {item.content}
         </p>
