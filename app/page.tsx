@@ -125,6 +125,27 @@ async function getLandingData() {
   };
 }
 
+async function enrichNewsItems(supabase: Awaited<ReturnType<typeof createClient>>, newsItems: any[]) {
+  if (!newsItems.length) return [];
+
+  const newsIds = newsItems.map((item) => item.id);
+  
+  const { data: stats } = await supabase
+    .from("news_comment_stats")
+    .select("news_id, comment_count, like_count")
+    .in("news_id", newsIds);
+
+  const statsMap = Object.fromEntries(
+    (stats ?? []).map((row) => [row.news_id, row])
+  );
+
+  return newsItems.map((item) => ({
+    ...item,
+    comment_count: statsMap[item.id]?.comment_count ?? 0,
+    like_count: statsMap[item.id]?.like_count ?? 0,
+  }));
+}
+
 async function getDashboardData() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -161,10 +182,12 @@ async function getDashboardData() {
       profileMap[p.user_id] = p.username;
     });
 
-    newsWithUsernames = newsResponse.data.map((n: any) => ({
+    const newsRows = (newsResponse.data ?? []).map((n: any) => ({
       ...n,
       author_username: profileMap[n.author] || "Unknown",
     }));
+
+    newsWithUsernames = await enrichNewsItems(supabase, newsRows);
   }
 
   const walletError =
@@ -444,10 +467,10 @@ async function Dashboard() {
 
           <section className="w-full">
             <div className="rounded-lg border bg-background p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
+              <Link href="/news"  className="flex items-center gap-2 mb-4 hover:opacity-70 transition-opacity ">
                 <Newspaper size={24} />
                 <h2 className="font-bold text-2xl">Latest News</h2>
-              </div>
+              </Link>
               {news && news.length > 0 ? (
                 <div className="grid gap-4 md:grid-cols-1">
                   {news.map((item: NewsRecord) => (
