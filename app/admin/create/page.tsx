@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import { Loader2, ShieldAlert } from "lucide-react";
 
 const TEAM_MEMBERS = [
@@ -20,15 +19,18 @@ const TEAM_MEMBERS = [
 
 function getNextMonday(): string {
   const today = new Date();
-  const day = today.getDay(); // 0 = Sunday, 1 = Monday, ...
+  const day = today.getDay();
   const daysUntilMonday = day === 1 ? 7 : (8 - day) % 7;
   const nextMonday = new Date(today);
   nextMonday.setDate(today.getDate() + daysUntilMonday);
-  return nextMonday.toISOString().split("T")[0];
+
+  const yyyy = nextMonday.getFullYear();
+  const mm = String(nextMonday.getMonth() + 1).padStart(2, "0");
+  const dd = String(nextMonday.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 export default function CreateEventPage() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [odds, setOdds] = useState(0.5);
