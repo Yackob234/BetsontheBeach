@@ -9,33 +9,20 @@ async function enrichNewsItems(supabase: Awaited<ReturnType<typeof createClient>
   if (!newsItems.length) return [];
 
   const newsIds = newsItems.map((item) => item.id);
-  const { data: commentRows } = await supabase
-    .from("news_comments")
-    .select("news_id, content, rating")
-    .in("news_id", newsIds)
-    .is("deleted_at", null);
+  
+  const { data: stats } = await supabase
+    .from("news_comment_stats")
+    .select("news_id, comment_count, like_count")
+    .in("news_id", newsIds);
 
-  const counts = Object.fromEntries(
-    newsIds.map((newsId) => [newsId, { comment_count: 0, like_count: 0 }]),
+  const statsMap = Object.fromEntries(
+    (stats ?? []).map((row) => [row.news_id, row])
   );
-
-  (commentRows ?? []).forEach((row: any) => {
-    const entry = counts[row.news_id];
-    if (!entry) return;
-
-    if (typeof row.content === "string" && row.content.trim() && (row.rating ?? 0) <= 0) {
-      entry.comment_count += 1;
-    }
-
-    if ((row.rating ?? 0) > 0) {
-      entry.like_count += 1;
-    }
-  });
 
   return newsItems.map((item) => ({
     ...item,
-    comment_count: counts[item.id]?.comment_count ?? 0,
-    like_count: counts[item.id]?.like_count ?? 0,
+    comment_count: statsMap[item.id]?.comment_count ?? 0,
+    like_count: statsMap[item.id]?.like_count ?? 0,
   }));
 }
 
