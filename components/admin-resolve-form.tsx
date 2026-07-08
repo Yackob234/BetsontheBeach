@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ShieldAlert, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 type EventRow = {
   id: number;
@@ -25,6 +26,8 @@ export function AdminResolveForm() {
   const [selectedOutcome, setSelectedOutcome] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [authorized, setAuthorized] = useState(false);
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
   useEffect(() => {
     const init = async () => {
@@ -51,8 +54,11 @@ export function AdminResolveForm() {
         return;
       }
 
-      const { data, error } = await supabase.from("events").select("id,name,event_date,result,status").order("event_date", { ascending: true })
-        .filter("result", "is", null).eq("status", "open");
+      const { data, error } = await supabase
+        .from("events")
+        .select("id,name,event_date,result,status")
+        .order("event_date", { ascending: true })
+        .or(`status.eq.open,event_date.gte.${oneWeekAgo.toISOString()}`);
 
       if (error) {
         setError(error.message);
@@ -66,7 +72,7 @@ export function AdminResolveForm() {
     void init();
   }, []);
 
-  const pendingEvents = useMemo(() => events.filter((event) => !event.result), [events]);
+  const pendingEvents = useMemo(() => events.filter((event) => event.result===null && event.status === "open"), [events]);
 
   const handleResolve = async (eventId: number, outcome: boolean | "canceled") => {
     if (!authorized) return;
@@ -84,7 +90,7 @@ export function AdminResolveForm() {
     } else {
         const { error } = await supabase.rpc("resolve_event", {
         p_event_id: eventId,
-        p_outcome: outcome,
+        p_result: outcome,
         });
         if(error) setError(error.message);
     }
@@ -95,7 +101,11 @@ export function AdminResolveForm() {
       } else {
         setStatus(`Resolved event ${eventId} as ${outcome ? "yes" : "no"}.`);
       }
-      const { data } = await supabase.from("events").select("id,name,event_date,result,status").order("event_date", { ascending: true });
+      const { data, error } = await supabase
+        .from("events")
+        .select("id,name,event_date,result,status")
+        .order("event_date", { ascending: true })
+        .or(`status.eq.open,event_date.gte.${oneWeekAgo.toISOString()}`);
       setEvents(data ?? []);
       setSelectedEventId("");
       setSelectedOutcome("");
@@ -129,6 +139,12 @@ export function AdminResolveForm() {
 
   return (
     <div className="space-y-6">
+      <Link 
+        href="/admin/create" 
+        className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/2 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5 transition"
+      >
+        + Create Event
+      </Link>
       <Card>
         <CardHeader>
           <CardTitle>Resolve events</CardTitle>
@@ -190,7 +206,7 @@ export function AdminResolveForm() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Upcoming events</CardTitle>
+          <CardTitle>Recent/Pending events</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {events.length === 0 ? (
@@ -206,10 +222,10 @@ export function AdminResolveForm() {
                     </p>
                   </div>
                   <div className="text-right text-sm">
-                    <p className={`rounded-full px-2 py-1 ${event.result ? "bg-green-500/10 text-green-600" : "bg-amber-500/10 text-amber-600"}`}>
-                      {event.result ? "Resolved" : "Pending"}
+                    <p className={`rounded-full px-2 py-1 ${event.result !== null ? "bg-green-500/10 text-green-600" : event.status === "open" ? "bg-amber-500/10 text-amber-600" : "bg-red-500/10 text-red-600"}`}>
+                      {event.result !== null ? "Resolved" : event.status === "open" ? "Open" : "Cancelled"}
                     </p>
-                    <p className="mt-1 text-muted-foreground">Outcome: {event.result ?? "—"}</p>
+                    <p className="mt-1 text-muted-foreground">Outcome: {event.result == null ? '-' : (event.result ? 'Yes' : 'No')}</p>
                   </div>
                 </div>
               </div>
