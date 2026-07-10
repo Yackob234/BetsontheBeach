@@ -73,9 +73,16 @@ export default async function NewsPage() {
           <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Community</p>
           <h1 className="text-3xl font-semibold">News archive</h1>
         </div>
-        <div className="rounded-full border bg-background p-2">
-          <Newspaper className="h-5 w-5" />
-        </div>
+        
+        <Link 
+          href="/news/create" 
+          className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/2 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5 transition"
+        >
+          Create
+          <div className="rounded-full border bg-background p-2">
+            <Newspaper className="h-5 w-5" />
+          </div>
+        </Link>
       </div>
 
       <Card>
