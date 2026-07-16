@@ -1,9 +1,42 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { CommentsList } from './comments-list';
 import { Button } from '@/components/ui/button';
+
+function normalizeTags(tags: unknown): string[] {
+  if (!tags) return [];
+
+  if (Array.isArray(tags)) {
+    return tags
+      .map((tag) => (typeof tag === 'string' ? tag.trim() : String(tag).trim()))
+      .filter(Boolean);
+  }
+
+  if (typeof tags === 'string') {
+    const trimmed = tags.trim();
+    if (!trimmed) return [];
+
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed
+          .map((tag) => (typeof tag === 'string' ? tag.trim() : String(tag).trim()))
+          .filter(Boolean);
+      }
+    } catch {
+      // fall back to comma-separated parsing
+    }
+
+    return trimmed
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
 
 export default function PlaceBetForm() {
   const [events, setEvents] = useState<any[]>([]);
@@ -15,6 +48,10 @@ export default function PlaceBetForm() {
   const [isDesktop, setIsDesktop] = useState(false);
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
   const [betComment, setBetComment] = useState("");
+  const [sortBy, setSortBy] = useState<'default' | 'volume' | 'odds'>('default');
+  const [sortDirection, setSortDirection] = useState<'desc' | 'asc'>('desc');
+  const [selectedTeam, setSelectedTeam] = useState<string>('all');
+  const [eventTags, setEventTags] = useState<string[]>([]);
 
   const loadEvents = useCallback(async () => {
     setLoading(true);
@@ -53,27 +90,28 @@ export default function PlaceBetForm() {
         setEvents([]);
         return [];
       }
-      // Fetch comment counts for all events
+
       if (data && data.length > 0) {
         const eventIds = data.map((e: any) => e.id);
-        const { data: commentsData } = await supabase
-          .from('comments')
-          .select('event_id', { count: 'exact', head: true })
-          .in('event_id', eventIds);
-        
-        // Count comments per event
-        const counts: Record<number, number> = {};
+
         const { data: allComments } = await supabase
           .from('comments')
           .select('event_id')
           .in('event_id', eventIds);
-        
+
+        const counts: Record<number, number> = {};
         (allComments ?? []).forEach((c: any) => {
           counts[c.event_id] = (counts[c.event_id] || 0) + 1;
         });
-        
+
         setCommentCounts(counts);
       }
+
+      const eventTags = await supabase
+        .from('event_tags')
+        .select('id, name')
+      // remove test tag in production
+      setEventTags((eventTags.data?.map((tag: any) => tag.name) ?? []).filter((tag: any) => tag == 'test' ? process.env.NODE_ENV !== 'production' : true));
 
       setEvents(data ?? []);
       return data ?? [];
@@ -103,6 +141,52 @@ export default function PlaceBetForm() {
       else mq.removeListener(handler as any);
     };
   }, []);
+
+  const handleSort = (field: 'volume' | 'odds') => {
+    if (sortBy === field) {
+      setSortDirection((prev) => (prev === 'desc' ? 'asc' : 'desc'));
+    } else {
+      setSortBy(field);
+      setSortDirection('desc');
+    }
+  };
+
+
+  const visibleEvents = useMemo(() => {
+    let nextEvents = [...events];
+
+    if (selectedTeam !== 'all') {
+      const selectedLower = selectedTeam.toLowerCase();
+      nextEvents = nextEvents.filter((event) => {
+        const tags = normalizeTags(event?.tags ?? []);
+        return tags.some((tag) => tag.toLowerCase() === selectedLower);
+      });
+    }
+
+    if (sortBy === 'volume') {
+      nextEvents.sort((a, b) => {
+        const aVolume = Number(a?.volume ?? 0);
+        const bVolume = Number(b?.volume ?? 0);
+        return sortDirection === 'desc' ? bVolume - aVolume : aVolume - bVolume;
+      });
+    } else if (sortBy === 'odds') {
+      nextEvents.sort((a, b) => {
+        const aOdds = Number(a?.starting_odds ?? 0);
+        const bOdds = Number(b?.starting_odds ?? 0);
+        return sortDirection === 'desc' ? bOdds - aOdds : aOdds - bOdds;
+      });
+    }
+
+    return nextEvents;
+  }, [events, selectedTeam, sortBy, sortDirection]);
+
+
+  useEffect(() => {
+    if (!selected) return;
+    if (!visibleEvents.some((event: any) => event.id === selected.id)) {
+      setSelected(null);
+    }
+  }, [visibleEvents, selected]);
 
   async function placeBet() {
     setMessage(null);
@@ -157,7 +241,7 @@ export default function PlaceBetForm() {
       setAmount('');
 
       // Reload events so volume/aggregates update and reflect the new bet
-      const newEvents = await loadEvents();
+      await loadEvents();
     } catch (err: any) {
       setMessage(err?.message ?? 'Error placing bet');
     } finally {
@@ -171,19 +255,66 @@ export default function PlaceBetForm() {
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant={sortBy === 'volume' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleSort('volume')}
+          >
+            Sort: Volume {sortBy === 'volume' ? (sortDirection === 'desc' ? '↓' : '↑') : '↓'}
+          </Button>
+          <Button
+            type="button"
+            variant={sortBy === 'odds' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleSort('odds')}
+          >
+            Sort: Odds {sortBy === 'odds' ? (sortDirection === 'desc' ? '↓' : '↑') : '↓'}
+          </Button>
+          <Button
+            type="button"
+            variant={sortBy === 'default' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setSortBy('default');
+              setSortDirection('desc');
+            }}
+          >
+            Default
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium">Filter by tag</label>
+          <select
+            value={selectedTeam}
+            onChange={(e) => setSelectedTeam(e.target.value)}
+            className="border rounded p-2 text-sm bg-background"
+          >
+            <option value="all">All</option>
+            {eventTags.map((member) => (
+              <option key={member} value={member}>
+                {member}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Events grid */}
       <div>
-        {/* <h3 className="text-sm font-medium mb-3">Available Events</h3> */}
-        {events.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No events available.</p>
+        {visibleEvents.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No events match the current filters.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {isDesktop ? (
               (() => {
                 const nodes: React.ReactNode[] = [];
-                for (let i = 0; i < events.length; i += 2) {
-                  const a = events[i];
-                  const b = events[i + 1];
+                for (let i = 0; i < visibleEvents.length; i += 2) {
+                  const a = visibleEvents[i];
+                  const b = visibleEvents[i + 1];
 
                   nodes.push(
                     <React.Fragment key={`row-${i}`}>
@@ -308,9 +439,9 @@ export default function PlaceBetForm() {
                             </div>
 
                             <div className="flex gap-2">
-                              <Button 
-                                onClick={placeBet} 
-                                className="flex-1" 
+                              <Button
+                                onClick={placeBet}
+                                className="flex-1"
                                 disabled={placing || !betComment.trim() || !amount || Number(amount) <= 0 || selected._choice === undefined}
                               >
                                 {placing ? 'Placing…' : 'Place Bet'}
@@ -327,7 +458,7 @@ export default function PlaceBetForm() {
                             )}
 
                             {/* Comments section */}
-                            <CommentsList 
+                            <CommentsList
                               eventId={selected.id}
                               isBetMode={true}
                               betComment={betComment}
@@ -343,7 +474,7 @@ export default function PlaceBetForm() {
               })()
             ) : (
               // mobile: single column, render each event and widget inline under selected without grouping
-              events.map((ev) => (
+              visibleEvents.map((ev: any) => (
                 <div key={ev.id} className="w-full max-w-sm mx-auto">
                   <div
                     onClick={() => {
@@ -432,9 +563,9 @@ export default function PlaceBetForm() {
                       </div>
 
                       <div className="flex gap-2">
-                        <Button 
-                          onClick={placeBet} 
-                          className="flex-1" 
+                        <Button
+                          onClick={placeBet}
+                          className="flex-1"
                           disabled={placing || !betComment.trim() || !amount || Number(amount) <= 0 || selected._choice === undefined}
                         >
                           {placing ? 'Placing…' : 'Place Bet'}
@@ -451,7 +582,7 @@ export default function PlaceBetForm() {
                       )}
 
                       {/* Comments section */}
-                      <CommentsList 
+                      <CommentsList
                         eventId={selected.id}
                         isBetMode={true}
                         betComment={betComment}
@@ -465,8 +596,6 @@ export default function PlaceBetForm() {
           </div>
         )}
       </div>
-
-      
     </div>
   );
 }
