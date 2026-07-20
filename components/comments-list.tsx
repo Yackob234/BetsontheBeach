@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "./ui/button";
+import { UserAvatar } from "./user-avatar";
 
 interface Comment {
   id: number;
@@ -10,6 +11,7 @@ interface Comment {
   created_at: string;
   user_id: string;
   username?: string;
+  avatar_url?: string | null;
   is_bet_comment?: boolean;
   bet_pick?: boolean;
   bet_amount?: number;
@@ -59,17 +61,18 @@ export function CommentsList({
           const userIds = [...new Set(data.map((c) => c.user_id))];
           const { data: profiles } = await supabase
             .from("profiles")
-            .select("user_id, username")
+            .select("user_id, username, avatar_url")
             .in("user_id", userIds);
 
-          const profileMap: Record<string, string> = {};
+          const profileMap: Record<string, { username?: string; avatar_url?: string | null }> = {};
           (profiles ?? []).forEach((p: any) => {
-            profileMap[p.user_id] = p.username;
+            profileMap[p.user_id] = { username: p.username, avatar_url: p.avatar_url };
           });
 
           setComments(data.map((c: any) => ({
             ...c,
-            username: profileMap[c.user_id] || "Anonymous",
+            username: profileMap[c.user_id]?.username || "Anonymous",
+            avatar_url: profileMap[c.user_id]?.avatar_url || null,
           })));
         } else {
           setComments([]);
@@ -157,6 +160,11 @@ export function CommentsList({
             }`}>
               <div className="flex justify-between items-start gap-2">
                 <div className="flex items-center gap-2">
+                  <UserAvatar
+                    name={comment.username}
+                    avatarUrl={comment.avatar_url}
+                    sizeClassName="h-7 w-7"
+                  />
                   <span className="font-medium">{comment.username}</span>
                   {comment.is_bet_comment && (
                     <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${
