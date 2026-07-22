@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { UserAvatar } from '@/components/user-avatar';
 
 function formatAmount(value: number | string) {
   const amount = typeof value === 'string' ? Number(value) : value;
@@ -117,13 +118,11 @@ export default async function LeaderboardPage() {
                         <div className="font-bold text-lg text-muted-foreground">#{idx + 1}</div>
                       )}
                     </div>
-                    {profile?.avatar_url && (
-                      <img
-                        src={profile.avatar_url}
-                        alt={profile.username}
-                        className="w-12 h-12 rounded-full object-cover ring-2 ring-foreground/10"
-                      />
-                    )}
+                    <UserAvatar
+                      name={profile?.username || 'Unknown'}
+                      avatarUrl={profile?.avatar_url}
+                      sizeClassName="h-12 w-12"
+                    />
                     <div>
                       <div className="font-semibold text-base">{profile?.username || 'Unknown'}</div>
                       <div className="text-xs text-muted-foreground">Rank #{idx + 1}</div>

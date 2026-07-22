@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { NewsRecord } from "@/components/news-card";
+import { UserAvatar } from "@/components/user-avatar";
 
 async function enrichNewsItems(supabase: Awaited<ReturnType<typeof createClient>>, newsItems: any[]) {
   if (!newsItems.length) return [];
@@ -44,16 +45,17 @@ export default async function NewsPage() {
   if (authorIds.length > 0) {
     const { data: profilesData } = await supabase
       .from("profiles")
-      .select("user_id, username")
+      .select("user_id, username, avatar_url")
       .in("user_id", authorIds);
 
     const profileMap = Object.fromEntries(
-      (profilesData ?? []).map((profile: any) => [profile.user_id, profile.username]),
+      (profilesData ?? []).map((profile: any) => [profile.user_id, profile]),
     );
 
     const enrichedItems = newsItems.map((item: any) => ({
       ...item,
-      author_username: profileMap[item.author] || "Unknown",
+      author_username: profileMap[item.author]?.username || "Unknown",
+      author_avatar_url: profileMap[item.author]?.avatar_url || null,
     }));
 
     newsWithUsernames = await enrichNewsItems(supabase, enrichedItems);
@@ -61,6 +63,7 @@ export default async function NewsPage() {
     const enrichedItems = newsItems.map((item: any) => ({
       ...item,
       author_username: "Unknown",
+      author_avatar_url: null,
     }));
 
     newsWithUsernames = await enrichNewsItems(supabase, enrichedItems);
@@ -109,7 +112,14 @@ export default async function NewsPage() {
                         })}
                       </p>
                       <h2 className="text-xl font-semibold">{item.title}</h2>
-                      <p className="text-sm text-muted-foreground">By {item.author_username || "Unknown"}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <UserAvatar
+                          name={item.author_username || "Unknown"}
+                          avatarUrl={item.author_avatar_url}
+                          sizeClassName="h-8 w-8"
+                        />
+                        <span>By {item.author_username || "Unknown"}</span>
+                      </div>
                       <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                         <span>{(item.comment_count ?? 0)} comment{(item.comment_count ?? 0) === 1 ? "" : "s"}</span>
                         <span>•</span>
