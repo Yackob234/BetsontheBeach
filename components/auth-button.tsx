@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./logout-button";
+import { UserAvatar } from "./user-avatar";
 
 export async function AuthButton() {
   const supabase = await createClient();
@@ -10,13 +11,16 @@ export async function AuthButton() {
   const { data: { user } } = await supabase.auth.getUser();
 
   let username = user?.email;
+  let profile: { username?: string; avatar_url?: string | null } | null = null;
 
   if (user?.id) {
-    const { data: profile } = await supabase
+    const { data } = await supabase
       .from("profiles")
-      .select("username")
+      .select("username, avatar_url")
       .eq("user_id", user.id)
       .single();
+
+    profile = data;
 
     if (profile?.username) {
       username = profile.username;
@@ -25,9 +29,16 @@ export async function AuthButton() {
 
   return user ? (
     <div className="flex items-center gap-2 md:gap-4">
-      <span className="hidden md:inline text-sm truncate">
-        Hey, {username}!
-      </span>
+      <div className="hidden md:flex items-center gap-2">
+        <UserAvatar
+          name={username as string | null}
+          avatarUrl={(profile as { avatar_url?: string | null } | null | undefined)?.avatar_url}
+          sizeClassName="h-8 w-8"
+        />
+        <span className="text-sm truncate">
+          Hey, {username}!
+        </span>
+      </div>
       <LogoutButton />
     </div>
   ) : (

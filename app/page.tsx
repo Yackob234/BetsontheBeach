@@ -174,17 +174,18 @@ async function getDashboardData() {
     const authorIds = newsResponse.data.map((n: any) => n.author);
     const profilesResponse = await supabase
       .from("profiles")
-      .select("user_id, username")
+      .select("user_id, username, avatar_url")
       .in("user_id", authorIds);
 
-    const profileMap: { [key: string]: string } = {};
+    const profileMap: { [key: string]: { username: string; avatar_url: string | null } } = {};
     (profilesResponse.data || []).forEach((p: any) => {
-      profileMap[p.user_id] = p.username;
+      profileMap[p.user_id] = { username: p.username, avatar_url: p.avatar_url };
     });
 
     const newsRows = (newsResponse.data ?? []).map((n: any) => ({
       ...n,
-      author_username: profileMap[n.author] || "Unknown",
+      author_username: profileMap[n.author]?.username || "Unknown",
+      author_avatar_url: profileMap[n.author]?.avatar_url || null,
     }));
 
     newsWithUsernames = await enrichNewsItems(supabase, newsRows);

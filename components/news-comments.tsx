@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "./ui/textarea";
 import { MessageCircleReply, Loader2, Heart } from "lucide-react";
+import { UserAvatar } from "./user-avatar";
 
 type CommentRecord = {
   id: number;
@@ -16,6 +17,7 @@ type CommentRecord = {
   deleted_at: string | null;
   rating: number | null;
   username?: string;
+  avatar_url?: string | null;
   children?: CommentRecord[];
 };
 
@@ -64,16 +66,17 @@ export function NewsComments({ newsId }: { newsId: number }) {
 
     const userIds = [...new Set((data ?? []).map((comment) => comment.user_id).filter(Boolean))] as string[];
     const { data: profilesData } = userIds.length
-      ? await supabase.from("profiles").select("user_id, username").in("user_id", userIds)
+      ? await supabase.from("profiles").select("user_id, username, avatar_url").in("user_id", userIds)
       : { data: [] };
 
-    const profileMap = Object.fromEntries((profilesData ?? []).map((profile: any) => [profile.user_id, profile.username]));
+    const profileMap = Object.fromEntries((profilesData ?? []).map((profile: any) => [profile.user_id, { username: profile.username, avatar_url: profile.avatar_url }]));
 
     const mapped = (data ?? [])
       .filter((comment: any) => Boolean(comment.content?.trim()) && (comment.rating ?? 0) <= 0)
       .map((comment: any) => ({
         ...comment,
-        username: profileMap[comment.user_id] || "Anonymous",
+        username: profileMap[comment.user_id]?.username || "Anonymous",
+        avatar_url: profileMap[comment.user_id]?.avatar_url || null,
       }));
 
     const likeTotal = (data ?? []).filter((comment: any) => (comment.rating ?? 0) > 0).length;
@@ -169,7 +172,13 @@ export function NewsComments({ newsId }: { newsId: number }) {
   const renderComment = (comment: CommentRecord, depth = 0) => (
     <div key={comment.id} className={`rounded-lg border bg-background p-3 ${depth > 0 ? "ml-4" : ""}`}>
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="flex items-start gap-2">
+          <UserAvatar
+            name={comment.username || "Anonymous"}
+            avatarUrl={comment.avatar_url}
+            sizeClassName="h-8 w-8"
+          />
+          <div>
           <p className="text-sm font-medium">{comment.username || "Anonymous"}</p>
           <p className="text-xs text-muted-foreground">
             {new Date(comment.created_at).toLocaleString("en-US", {
@@ -180,6 +189,7 @@ export function NewsComments({ newsId }: { newsId: number }) {
               minute: "2-digit",
             })}
           </p>
+          </div>
         </div>
         <Button variant="ghost" size="sm" onClick={() => setReplyingTo({ id: comment.id, username: comment.username || "Anonymous" })}>
           <MessageCircleReply className="mr-1 h-4 w-4" />

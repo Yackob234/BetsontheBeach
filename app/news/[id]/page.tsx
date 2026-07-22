@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { NewsComments } from "@/components/news-comments";
+import { UserAvatar } from "@/components/user-avatar";
 
 export default async function NewsPostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -23,7 +24,7 @@ export default async function NewsPostPage({ params }: { params: Promise<{ id: s
 
   const { data: profileData } = await supabase
     .from("profiles")
-    .select("username")
+    .select("username, avatar_url")
     .eq("user_id", newsItem.author)
     .single();
 
@@ -49,7 +50,14 @@ export default async function NewsPostPage({ params }: { params: Promise<{ id: s
             <img src={newsItem.image_url} alt={newsItem.title} className="w-full max-h-96 rounded-lg object-cover" />
           ) : null}
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <span>By {profileData?.username || "Unknown"}</span>
+            <div className="flex items-center gap-2">
+              <UserAvatar
+                name={profileData?.username || "Unknown"}
+                avatarUrl={profileData?.avatar_url}
+                sizeClassName="h-8 w-8"
+              />
+              <span>By {profileData?.username || "Unknown"}</span>
+            </div>
             <span>•</span>
             <span>{new Date(newsItem.created_at).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}</span>
           </div>

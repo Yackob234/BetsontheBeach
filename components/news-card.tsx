@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link';
-import { useState } from 'react'
+import { useState } from 'react';
+import { UserAvatar } from './user-avatar';
 
 export type NewsRecord = {
     id: number;
@@ -10,6 +11,7 @@ export type NewsRecord = {
     image_url: string | null;
     author: string;
     author_username?: string;
+    author_avatar_url?: string | null;
     comment_count?: number;
     like_count?: number;
 };
@@ -42,9 +44,14 @@ export function NewsCard({ item }: { item: NewsRecord }) {
           {item.content}
         </p>
         <div className="flex items-center justify-between mt-2">
-          <p className="text-xs text-muted-foreground">
-            By {item.author_username || "Unknown"}
-          </p>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <UserAvatar
+              name={item.author_username || "Unknown"}
+              avatarUrl={item.author_avatar_url}
+              sizeClassName="h-7 w-7"
+            />
+            <span>By {item.author_username || "Unknown"}</span>
+          </div>
           <p className="text-xs text-muted-foreground">
             {new Date(item.created_at).toLocaleDateString("en-US", {
               month: "short",
