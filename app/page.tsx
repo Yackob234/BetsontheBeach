@@ -3,6 +3,7 @@ import { InfoIcon, Newspaper, TrendingUp, Coins, Calendar, LineChart } from "luc
 import { NewsCard, NewsRecord } from "@/components/news-card";
 import { FormattedTime } from "@/components/formatted-time";
 import Link from "next/link";
+import { NotificationToggle } from "@/components/notification-toggle";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -433,7 +434,8 @@ async function Dashboard() {
 
   return (
     <div className="flex-1 w-full flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col md:flex-row gap-2">
+        <NotificationToggle hideIfSubscribed />
         <div className="bg-accent text-sm p-3 px-5 rounded-md text-foreground flex gap-3 items-center">
           <InfoIcon size="16" strokeWidth={2} width={16} height={16} className="flex-shrink-0 mt-0.5" />
           Gambling is a issue. This project is for educational purposes only and not intended for real money betting. Don&apos;t be a degenerate, kids.
