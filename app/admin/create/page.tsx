@@ -4,19 +4,6 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, ShieldAlert } from "lucide-react";
 
-const TEAM_MEMBERS = [
-  "team",
-  "test",
-  "jacob",
-  "katie",
-  "riley",
-  "samson",
-  "enika",
-  "ryan",
-  "montana",
-  "nic",
-];
-
 function getNextMonday(): string {
   const today = new Date();
   const day = today.getDay();
@@ -41,6 +28,7 @@ export default function CreateEventPage() {
   const [success, setSuccess] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [eventTags, setEventTags] = useState<string[]>([]);
 
   useEffect(() => {
     const init = async () => {
@@ -61,6 +49,11 @@ export default function CreateEventPage() {
       console.log("Profile data:", profileData);
       const isAllowed = profileData?.is_admin;
       setAuthorized(isAllowed);
+
+      const eventTags = await supabase
+        .from('event_tags')
+        .select('id, name')
+      setEventTags(eventTags.data?.map((tag: any) => tag.name) ?? []);
 
       if (!isAllowed) {
         setLoading(false);
@@ -225,19 +218,19 @@ export default function CreateEventPage() {
           <span className="text-muted-foreground font-normal">(optional)</span>
         </label>
         <div className="flex flex-wrap gap-2">
-          {TEAM_MEMBERS.map((member) => {
-            const selected = selectedTags.includes(member);
+          {eventTags.map((tag) => {
+            const selected = selectedTags.includes(tag);
             return (
               <button
-                key={member}
-                onClick={() => toggleTag(member)}
+                key={tag}
+                onClick={() => toggleTag(tag)}
                 className={`px-3 py-1 rounded-full text-sm border transition ${
                   selected
                     ? "border-primary bg-primary/10 text-primary font-medium"
                     : "border-muted-foreground/20 hover:border-primary/50 text-muted-foreground"
                 }`}
               >
-                {member}
+                {tag}
               </button>
             );
           })}
