@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { Bell, Loader2, Send } from "lucide-react";
 
 const QUICK_MESSAGES = [
@@ -15,6 +16,39 @@ export default function SendNotificationPage() {
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ sent: number; failed: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [authorized, setAuthorized] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      const init = async () => {
+        const supabase = createClient();
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+  
+        if (userError || !user?.id) {
+          setAuthorized(false);
+          setLoading(false);
+          return;
+        }
+  
+        const { data: profileData } = await supabase.from("profiles").select("is_admin").eq("user_id", user?.id).single();
+  
+        console.log("Profile data:", profileData);
+        const isAllowed = profileData?.is_admin;
+        setAuthorized(isAllowed);
+  
+        if (!isAllowed) {
+          setLoading(false);
+          return;
+        }
+  
+        setLoading(false);
+      };
+  
+      void init();
+    }, []);
 
   const applyQuick = (msg: { title: string; body: string }) => {
     setTitle(msg.title);
