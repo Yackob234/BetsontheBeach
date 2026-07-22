@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { InfoIcon } from "lucide-react";
 import { UsernameForm } from "./username-form";
+import { NotificationToggle } from "@/components/notification-toggle";
 import { ProfilePictureForm } from "./profile-picture-form";
 import { UserAvatar } from "@/components/user-avatar";
 
@@ -55,6 +56,8 @@ export default async function ProfilePage() {
       <div className="w-full flex flex-col gap-6">
           <ProfilePictureForm />
       </div>
+      
+      <NotificationToggle />
       
       <div className="w-full">
           <div className="bg-blue-50 dark:bg-blue-950 text-sm p-3 px-5 rounded-md text-blue-900 dark:text-blue-100 flex gap-3 items-start">

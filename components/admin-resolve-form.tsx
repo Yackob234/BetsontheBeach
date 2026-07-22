@@ -139,12 +139,20 @@ export function AdminResolveForm() {
 
   return (
     <div className="space-y-6">
-      <Link 
-        href="/admin/create" 
-        className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/2 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5 transition"
-      >
-        + Create Event
-      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <Link 
+          href="/admin/create" 
+          className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/2 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5 transition"
+        >
+          + Create Event
+        </Link>
+        <Link 
+          href="/admin/notifications" 
+          className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/2 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5 transition"
+        >
+          + Create Notification
+        </Link>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Resolve events</CardTitle>
