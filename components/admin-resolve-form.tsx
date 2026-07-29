@@ -58,7 +58,7 @@ export function AdminResolveForm() {
         .from("events")
         .select("id,name,event_date,result,status")
         .order("event_date", { ascending: true })
-        .or(`status.eq.open,event_date.gte.${oneWeekAgo.toISOString()}`);
+        .gte("event_date", oneWeekAgo.toISOString());
 
       if (error) {
         setError(error.message);
@@ -105,7 +105,12 @@ export function AdminResolveForm() {
         .from("events")
         .select("id,name,event_date,result,status")
         .order("event_date", { ascending: true })
-        .or(`status.eq.open,event_date.gte.${oneWeekAgo.toISOString()}`);
+        .gte("event_date", oneWeekAgo.toISOString());
+      if (error) {
+        setError(error.message);
+      } else {
+        setEvents(data ?? []);
+      }
       setEvents(data ?? []);
       setSelectedEventId("");
       setSelectedOutcome("");
