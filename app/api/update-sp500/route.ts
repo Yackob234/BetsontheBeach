@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
 const BOT_USER_ID = '27872316-99c8-4ff2-b718-56dc23870ada'
-const SPY_JUNE1_CLOSE = 756.48
+const SPY_CLOSE = 773.83
 const BASELINE_BALANCE = 1000
 
 export async function GET() {
@@ -21,7 +21,7 @@ export async function GET() {
     console.log(`Current SPY price: ${currentPrice}`)
 
     // Calculate new balance
-    const multiplier = currentPrice / SPY_JUNE1_CLOSE
+    const multiplier = currentPrice / SPY_CLOSE
     const newBalance = BASELINE_BALANCE * multiplier
 
     console.log(`New balance: ${newBalance}`)
