@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { CommentsList } from './comments-list';
 import { Button } from '@/components/ui/button';
+import { OddsChart } from './odds-chart';
 
 function normalizeTags(tags: unknown): string[] {
   if (!tags) return [];
@@ -323,7 +324,11 @@ export default function PlaceBetForm() {
                           setAmount('');
                           setMessage(null);
                           setBetComment("");
+                          if (selected?.id === a.id) {
+                            setSelected(null);
+                          } else {
                           setSelected(a);
+                          }
                         }}
                         className={`relative w-full min-w-0 p-4 rounded-lg border cursor-pointer transition ${
                           selected?.id === a.id
@@ -353,7 +358,11 @@ export default function PlaceBetForm() {
                             setAmount('');
                             setMessage(null);
                             setBetComment("");
-                            setSelected(b);
+                          if (selected?.id === b.id) {
+                            setSelected(null);
+                          } else {
+                          setSelected(b);
+                          }
                           }}
                           className={`relative w-full min-w-0 p-4 rounded-lg border cursor-pointer transition ${
                             selected?.id === b.id
@@ -383,12 +392,18 @@ export default function PlaceBetForm() {
                         // If the selected event is in this row, render the widget after the row
                         selected && (selected.id === a.id || (b && selected.id === b.id)) && (
                           <div key={`widget-${selected.id}`} className="md:col-span-2 w-full min-w-0 rounded-lg border p-4 space-y-3 bg-muted/50 mt-3">
-                            <div>
-                              <p className="text-sm font-medium">Betting on: {selected.name ?? `Event ${selected.id}`}</p>
-                              <p className="text-xs text-muted-foreground">Odds: {(selected.starting_odds * 100).toFixed(0)}%</p>
-                              <p className="text-xs text-muted-foreground">Volume: {selected.volume ? selected.volume - 1000 : 0}</p>
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                              <div>
+                                <p className="text-sm font-medium">Betting on: {selected.name ?? `Event ${selected.id}`}</p>
+                                <p className="text-xs text-muted-foreground">Odds: {(selected.starting_odds * 100).toFixed(0)}%</p>
+                                <p className="text-xs text-muted-foreground">Volume: {selected.volume ? selected.volume - 1000 : 0}</p>
+                              </div>
                             </div>
 
+                              <OddsChart
+                                eventId={selected.id}
+                                version={events.find((e: any) => e.id === selected.id)?.volume}
+                              />
                             <div className="flex gap-2 items-center">
                               <label className="text-sm font-medium">Side:</label>
                               <div className="flex items-center gap-2">
@@ -481,7 +496,11 @@ export default function PlaceBetForm() {
                       setAmount('');
                       setMessage(null);
                       setBetComment("");
+                      if (selected?.id === ev.id) {
+                        setSelected(null);
+                      } else {
                       setSelected(ev);
+                      }
                     }}
                     className={`relative w-full min-w-0 p-4 rounded-lg border cursor-pointer transition ${
                       selected?.id === ev.id
@@ -512,6 +531,11 @@ export default function PlaceBetForm() {
                         <p className="text-xs text-muted-foreground">Odds: {(selected.starting_odds * 100).toFixed(0)}%</p>
                         <p className="text-xs text-muted-foreground">Volume: {selected.volume ? selected.volume - 1000 : 0}</p>
                       </div>
+
+                      <OddsChart
+                        eventId={selected.id}
+                        version={events.find((e: any) => e.id === selected.id)?.volume}
+                      />
 
                       <div className="flex gap-2 items-center">
                         <label className="text-sm font-medium">Side:</label>
